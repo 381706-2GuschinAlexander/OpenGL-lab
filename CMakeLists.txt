@@ -10,10 +10,9 @@ SET(CMAKE_BUILD_TYPE Release)
 SET(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3")
 SET(CMAKE_C_FLAGS_DISTRIBUTION "-O3")
 
+set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/src/lib)
+set(lib lib)
 
-set(main main)
-set(gl_module gl_module)
-set(gl_include ${CMAKE_CURRENT_SOURCE_DIR}/src/openGL_module)
 
 file(GLOB subdirs "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
 

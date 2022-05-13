@@ -1,5 +1,0 @@
-#include <GL/glut.h>
-
-
-
-
