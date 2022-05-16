@@ -4,7 +4,7 @@
 
 void SetMaterialType1(){
   const GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f }; 
-  const GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f }; 
+  const GLfloat mat_diffuse[] = { 1.f, 1.f, 1.f, 1.0f }; 
   const GLfloat mat_specular[] = { .0f, .0f, .0f, 1.0f }; 
   const GLfloat high_shininess[] = { 100.0f }; 
 
@@ -26,9 +26,21 @@ void SetMaterialType2(){
   glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 }
 
+void SetMaterialType3(){
+  const GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f }; 
+  const GLfloat mat_diffuse[] = { 1.f, 1.f, 1.f, 1.0f }; 
+  const GLfloat mat_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; 
+  const GLfloat high_shininess[] = { 100.0f }; 
+
+  glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+  glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+  glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+}
+
 void SetLighting1(){
-  const GLfloat light_ambient[] = {0.1f, 0.1f, 0.1f, 1.0f};
-  const GLfloat light_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+  const GLfloat light_ambient[] = {0.05f, 0.05f, 0.05f, 1.0f};
+  const GLfloat light_diffuse[] = {0.95f, 0.95f, 0.95f, 0.95f};
   const GLfloat light_specular[] = {0.5f, 0.5f, 0.5f, 1.0f};
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
@@ -74,11 +86,6 @@ void ConstructSphere(double r, int x_slices, int y_slices){
             auto [x01, y01, z01] = find_xyz(cur_teta, cur_phi);
             auto [x10, y10, z10] = find_xyz(cur_teta + teta_step, cur_phi + phi_step);
             auto [x11, y11, z11] = find_xyz(cur_teta, cur_phi + phi_step);
-
-            // glTexCoord2f(1.0f , 0.0f); glNormal3f(x10, y10, z10); glVertex3f(x10, y10, z10);
-            // glTexCoord2f(1.0f, 1.0f); glNormal3f(x00, y00, z00); glVertex3f(x00, y00, z00);//right
-            // glTexCoord2f(0.0f, 1.0f); glNormal3f(x01, y01, z01); glVertex3f(x01, y01, z01);
-            // glTexCoord2f(0.0f, 0.0f); glNormal3f(x11, y11, z11); glVertex3f(x11, y11, z11);
 
             glTexCoord2f(1.f - fx * j, 1.f - fy * (i + 1)); glNormal3f(x00, y00, z00); glVertex3f(x00, y00, z00);
             glTexCoord2f(1.f - fx * j, 1.f - fy * i); glNormal3f(x01, y01, z01); glVertex3f(x01, y01, z01);

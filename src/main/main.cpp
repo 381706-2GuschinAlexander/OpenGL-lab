@@ -3,17 +3,21 @@
 #include <stdlib.h> 
 #include "lib.h"
 #include <stdio.h>
-#include <gl\glaux.h>
 #include <stdexcept>
 
 
 
 const GLfloat light_position[] = { .0f, .0f, .0f, 1.0f };
 GLuint LoadTexture( const char * filename );
-GLuint	textures[2];
+const int texture_size = 3;
+GLuint	textures[texture_size];
 
 static const int FPS = 60;
-static GLfloat currentAngleOfRotation = 0.0;
+static GLfloat inc         = 5.0;
+static GLfloat earth_angle = 0.0;
+static GLfloat orbit_angle = 0.0;
+static GLfloat moon_angle = 0.0;
+static GLfloat sun_angle = 0.0;
 
 static int slices = 16;
 static int stacks = 16;
@@ -23,9 +27,7 @@ static void resize(int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    // gluPerspective(60.0, (GLfloat)width / (GLfloat)height, 1.0, 40.0);
-    glFrustum(-ar, ar, -1.0, 1.0, 2.0, 100.0); // Функция glFrustum умножает текущую матрицу
-    //на перспективную матрицу.
+    glFrustum(-ar, ar, -1.0, 1.0, 2.0, 100.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
@@ -37,8 +39,8 @@ static void display(void)
     glPushMatrix();
     {
         
-        glTranslated(0, 0, -15);
-        glRotated(50, 1, 0, 0);
+        glTranslated(0, 0, -20);
+        glRotated(20, 1, 0, 0);
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
         glPushMatrix();
         {
@@ -46,15 +48,48 @@ static void display(void)
             SetLighting1();
             SetMaterialType1();
             glColor3d(1, 1, 1);
-            auto [x, y, z] = get_xyz(currentAngleOfRotation, 7);
+            auto [x, y, z] = get_xyz(-orbit_angle, 9);
             glTranslated(x, y, z);
-            glRotated(-currentAngleOfRotation, 0, 1, 0);
+            glRotated(-23.5, 0, 0, 1);
+
+             glPushMatrix();
+            {
+                auto [x1, y1, z1] = get_xyz(-moon_angle, 2);
+                glTranslated(x1, y1, z1);
+                glRotated(-moon_angle, 0, 1, 0);
+                glBindTexture(GL_TEXTURE_2D, textures[2]);
+                glEnable(GL_TEXTURE_2D);
+                ConstructSphere(0.3, slices, stacks);
+                glDisable(GL_TEXTURE_2D);
+            }
+            glPopMatrix();
+
+
+            glRotated(-earth_angle, 0, 1, 0);
             glBindTexture(GL_TEXTURE_2D, textures[1]);
             glEnable(GL_TEXTURE_2D); 
             ConstructSphere(1, slices, stacks);
             glDisable(GL_TEXTURE_2D);
+
+           
         }
         glPopMatrix();
+
+        // glPushMatrix();
+        // {
+            
+        //     SetLighting1();
+        //     SetMaterialType3();
+        //     glColor3d(1, 1, 1);
+        //     auto [x, y, z] = get_xyz(-orbit_angle, 4);
+        //     glTranslated(x, y, z);
+        //     glRotated(-30., 0, 0, 1);
+        //     glRotated(-earth_angle, 0, 1, 0);
+        //     //glutSolidSphere(1.0, 16, 16);
+        //     glutSolidTeapot(1.0);
+
+        // }
+        // glPopMatrix();
         
         glPushMatrix();
         {
@@ -64,7 +99,8 @@ static void display(void)
             glTranslated(0, 0, 0);
             glBindTexture(GL_TEXTURE_2D, textures[0]);
             glEnable(GL_TEXTURE_2D); 
-            ConstructSphere(2, slices, stacks);
+            glRotated(sun_angle, 0, 1, 0);
+            ConstructSphere(2, 24, 24);
             glDisable(GL_TEXTURE_2D);
         }
         glPopMatrix();
@@ -79,10 +115,21 @@ void timer(int v)
 {
     if (true)
     {
-        currentAngleOfRotation += 1.0;
-        if (currentAngleOfRotation > 360.0)
+        earth_angle += inc;
+        orbit_angle += inc / 10.0;
+        moon_angle  += inc / 5.0;
+        sun_angle += inc / 30.0;
+        if (earth_angle > 360.0)
         {
-            currentAngleOfRotation -= 360.0;
+            earth_angle -= 360.0;
+        }
+        if (sun_angle > 360.0)
+        {
+            sun_angle -= 360.0;
+        }
+        if(orbit_angle > 360)
+        {
+            orbit_angle -= 360.0;
         }
         glutPostRedisplay();
     }
@@ -94,17 +141,16 @@ void Initialize()
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
-    glEnable(GL_COLOR_MATERIAL); // для одного или нескольких параметров материала
+    glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glClearColor(0, 0, 0, 1);
-    glGenTextures(2, textures);
-    textures[0] = LoadTexture("..//texture/sun.bmp");
-    textures[1] = LoadTexture("..//texture/earth.bmp");
-    
-
+    glGenTextures(texture_size, textures);
+    textures[0] = LoadTexture("../texture/sun.bmp");
+    textures[1] = LoadTexture("../texture/earth.bmp");
+    textures[2] = LoadTexture("../texture/moon.bmp");
 }
 
 
@@ -119,10 +165,9 @@ GLuint LoadTexture( const char * filename )
   file = fopen( filename, "rb" );
 
   if ( file == NULL ) throw std::invalid_argument("No such file");
-  width = 256;
-  height = 256;
+  width = 1024;
+  height = 512;
   data = (unsigned char *)malloc( width * height * 3 );
-  //int size = fseek(file,);
   fread( data, width * height * 3, 1, file );
   fclose( file );
 
@@ -143,25 +188,34 @@ GLuint LoadTexture( const char * filename )
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST );
 
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR );
-  //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT );
-  //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT );
   gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width, height,GL_RGB, GL_UNSIGNED_BYTE, data );
   free( data );
 
   return texture;
 }
 
+
+void keys(int key, int x, int y) { 
+ if (key == GLUT_KEY_RIGHT) 
+    inc  += 0.25; 
+ else if (key == GLUT_KEY_LEFT) 
+    inc  -= 0.25;  
+} 
+
+
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    glutInitWindowSize(1000, 800);
+    glutInitWindowSize(1980, 1240);
     glutInitWindowPosition(150, 150);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutCreateWindow("GLUT Shapes");
     glutReshapeFunc(resize);
     glutDisplayFunc(display);
     // 9auxDIBImageLoad();
-    
+    glutSpecialFunc(keys);
     glutTimerFunc(100, timer, 0);
     Initialize();
     glutMainLoop();
