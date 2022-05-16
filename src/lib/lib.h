@@ -62,6 +62,7 @@ void ConstructSphere(double r, int x_slices, int y_slices){
  
     double x_step = 360.0 / x_slices, y_step = 180.0 / y_slices;
     double phi_step  = radian(x_step), teta_step  = radian(y_step);
+    float fx = 1.0f/x_slices, fy = 1.0f/x_slices;
 
     glBegin(GL_QUADS);
     for(int  i = 0; i < y_slices; ++i){
@@ -69,15 +70,20 @@ void ConstructSphere(double r, int x_slices, int y_slices){
         for(int j = 0; j < x_slices; ++j){
             double cur_phi = phi_step * j;
 
-            auto [x00, y00, z00] = find_xyz(cur_teta, cur_phi);
-            auto [x01, y01, z01] = find_xyz(cur_teta, cur_phi + phi_step);
-            auto [x10, y10, z10] = find_xyz(cur_teta + teta_step, cur_phi);
-            auto [x11, y11, z11] = find_xyz(cur_teta + teta_step, cur_phi + phi_step);
+            auto [x00, y00, z00] = find_xyz(cur_teta + teta_step, cur_phi);
+            auto [x01, y01, z01] = find_xyz(cur_teta, cur_phi);
+            auto [x10, y10, z10] = find_xyz(cur_teta + teta_step, cur_phi + phi_step);
+            auto [x11, y11, z11] = find_xyz(cur_teta, cur_phi + phi_step);
 
-            glNormal3f(x10, y10, z10); glVertex3f(x10, y10, z10);
-            glNormal3f(x00, y00, z00); glVertex3f(x00, y00, z00);
-            glNormal3f(x01, y01, z01); glVertex3f(x01, y01, z01);
-            glNormal3f(x11, y11, z11); glVertex3f(x11, y11, z11);
+            // glTexCoord2f(1.0f , 0.0f); glNormal3f(x10, y10, z10); glVertex3f(x10, y10, z10);
+            // glTexCoord2f(1.0f, 1.0f); glNormal3f(x00, y00, z00); glVertex3f(x00, y00, z00);//right
+            // glTexCoord2f(0.0f, 1.0f); glNormal3f(x01, y01, z01); glVertex3f(x01, y01, z01);
+            // glTexCoord2f(0.0f, 0.0f); glNormal3f(x11, y11, z11); glVertex3f(x11, y11, z11);
+
+            glTexCoord2f(1.f - fx * j, 1.f - fy * (i + 1)); glNormal3f(x00, y00, z00); glVertex3f(x00, y00, z00);
+            glTexCoord2f(1.f - fx * j, 1.f - fy * i); glNormal3f(x01, y01, z01); glVertex3f(x01, y01, z01);
+            glTexCoord2f(1.f - fx * (j + 1), 1.f - fy * i); glNormal3f(x11, y11, z11); glVertex3f(x11, y11, z11);
+            glTexCoord2f(1.f - fx * (j + 1), 1.f - fy * (i + 1)); glNormal3f(x10, y10, z10); glVertex3f(x10, y10, z10);
         }
     }
     glEnd();
