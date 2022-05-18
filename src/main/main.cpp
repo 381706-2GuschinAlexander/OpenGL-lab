@@ -18,6 +18,7 @@ static GLfloat earth_angle = 0.0;
 static GLfloat orbit_angle = 0.0;
 static GLfloat moon_angle = 0.0;
 static GLfloat sun_angle = 0.0;
+static double  zoom = - 20;
 
 static int slices = 16;
 static int stacks = 16;
@@ -37,9 +38,8 @@ static void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    {
-        
-        glTranslated(0, 0, -20);
+    {  
+        glTranslated(0, 0, zoom);
         glRotated(20, 1, 0, 0);
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
         glPushMatrix();
@@ -74,22 +74,6 @@ static void display(void)
            
         }
         glPopMatrix();
-
-        // glPushMatrix();
-        // {
-            
-        //     SetLighting1();
-        //     SetMaterialType3();
-        //     glColor3d(1, 1, 1);
-        //     auto [x, y, z] = get_xyz(-orbit_angle, 4);
-        //     glTranslated(x, y, z);
-        //     glRotated(-30., 0, 0, 1);
-        //     glRotated(-earth_angle, 0, 1, 0);
-        //     //glutSolidSphere(1.0, 16, 16);
-        //     glutSolidTeapot(1.0);
-
-        // }
-        // glPopMatrix();
         
         glPushMatrix();
         {
@@ -198,10 +182,24 @@ GLuint LoadTexture( const char * filename )
 
 
 void keys(int key, int x, int y) { 
- if (key == GLUT_KEY_RIGHT) 
-    inc  += 0.25; 
- else if (key == GLUT_KEY_LEFT) 
-    inc  -= 0.25;  
+    switch (key)
+    {
+    case GLUT_KEY_RIGHT:
+        inc  += 0.25; 
+        break;
+    case GLUT_KEY_LEFT:
+        inc  -= 0.25; 
+        break;
+    case GLUT_KEY_UP:
+        zoom  += 0.25;
+        break;
+    case GLUT_KEY_DOWN:
+        zoom  -= 0.25;
+        break;
+    
+    default:
+        break;
+    }
 } 
 
 
@@ -214,7 +212,6 @@ int main(int argc, char *argv[])
     glutCreateWindow("GLUT Shapes");
     glutReshapeFunc(resize);
     glutDisplayFunc(display);
-    // 9auxDIBImageLoad();
     glutSpecialFunc(keys);
     glutTimerFunc(100, timer, 0);
     Initialize();
